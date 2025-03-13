@@ -1,0 +1,721 @@
+{
+	"info": {
+		"_postman_id": "d1a0b7d2-543b-4e8f-bd35-64e8771987c8",
+		"name": "Pet Store",
+		"schema": "https://schema.postman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Pet Controller",
+			"item": [
+				{
+					"name": "POST /pet",
+					"item": [
+						{
+							"name": "Create a new pet",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2a9b43e0-e4b7-4cf0-bc58-3d9edb8a1d16",
+										"exec": [
+											"let response = pm.response.text().replace(/([^\"\\w-])([-0-9.]{8,100})([^\"\\w-])/g, '$1\\\"$2\\\"$3');\r",
+											"let jsonData = JSON.parse(response);\r",
+											"let id = jsonData.id.toString();\r",
+											"\r",
+											"console.log(\"petId is \"+ id);\r",
+											"pm.environment.set(\"petId\", id);\r",
+											"\r",
+											"pm.test(\"Status Code is 200\", () => {\r",
+											"    pm.response.to.have.status(200).and.to.not.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response Body matches string\", () => {\r",
+											"    pm.expect(pm.response.text()).to.include(\"Bonnie\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Pet status is pending\", () => {\r",
+											"    pm.expect(jsonData.status).to.eql(pm.collectionVariables.get(\"pendingStatus\"));\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Pet category is correct\", () => {\r",
+											"    pm.expect(jsonData.category.name).to.eql(\"postman cat\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Content-Type header is present\", () => {\r",
+											"    pm.response.to.have.header(\"Content-Type\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response Time value is above 10 ms and less than 900ms\", () => {\r",
+											"    pm.expect(pm.response.responseTime).to.be.above(10).and.to.be.below(900);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Successfull POST request\", () => {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);\r",
+											"});\r",
+											"\r",
+											"const getPetByIdRequest = {\r",
+											"    url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\") + '/' + pm.environment.get(\"petId\"),\r",
+											"    method: 'GET',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest(getPetByIdRequest, function(error, getPetByIdResponse){\r",
+											"    pm.test(\"Get pet request has OK status\", function(){\r",
+											"        pm.expect(getPetByIdResponse.status).to.eql(\"OK\");\r",
+											"    });\r",
+											"\r",
+											"    const deletePetByIdRequest = {\r",
+											"    url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\") + '/' + pm.environment.get(\"petId\"),\r",
+											"    method: 'DELETE',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest(deletePetByIdRequest, function(error, deletePetByIdResponse){\r",
+											"    pm.test(\"Delete pet by Id request has OK status\", function(){\r",
+											"        pm.expect(deletePetByIdResponse.status).to.eql(\"OK\");\r",
+											"    });\r",
+											"})\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "0c6a1fb3-848d-476a-abee-87ad2b4ec88b",
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "e54e139b-76b8-4252-8d63-498c9078c993",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id\": 0,\r\n  \"category\": {\r\n    \"id\": {{$randomInt}},\r\n    \"name\": \"postman cat\"\r\n  },\r\n  \"name\": \"Bonnie\",\r\n  \"photoUrls\": [\r\n    \"{{$randomImageUrl}}\"\r\n  ],\r\n  \"tags\": [\r\n    {\r\n      \"id\": {{$randomInt}},\r\n      \"name\": \"{{$randomAbbreviation}}\"\r\n    }\r\n  ],\r\n  \"status\": \"{{pendingStatus}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{base_url}}/{{petController}}"
+							},
+							"response": []
+						}
+					],
+					"id": "7345a624-ed72-4947-ae1c-1f855c2dc615"
+				},
+				{
+					"name": "PUT /pet",
+					"item": [
+						{
+							"name": "Update an existing pet",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "0e755002-7c0a-45d9-bcbe-008afa1d47a8",
+										"exec": [
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Status Code is 200\", function(){\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Pet status is available\", function(){\r",
+											"    pm.expect(jsonData.status).to.eql(pm.collectionVariables.get(\"availableStatus\"));\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "dcedb8b4-13fd-4566-8a7e-bf84d8e3440d",
+										"exec": [
+											"const postPetRequest = {\r",
+											"    url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\"),\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: JSON.stringify({\r",
+											"        \"id\": 0,\r",
+											"        \"category\": {\r",
+											"             \"id\": 0,\r",
+											"             \"name\": \"string\"\r",
+											"        },\r",
+											"        \"name\": \"Bonnie\",\r",
+											"        \"photoUrls\": [\r",
+											"        \"string\"\r",
+											"        ],\r",
+											"        \"tags\": [\r",
+											"        {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": \"string\"\r",
+											"        }\r",
+											"        ],\r",
+											"        \"status\": pm.collectionVariables.get(\"pendingStatus\")\r",
+											"    })\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest(postPetRequest, function(error, response){\r",
+											"let responseText = response.text().replace(/([^\"\\w-])([-0-9.]{8,100})([^\"\\w-])/g, '$1\\\"$2\\\"$3');\r",
+											"let jsonData = JSON.parse(responseText);\r",
+											"let id = jsonData.id.replace('\"',''); \r",
+											"\r",
+											"console.log(\"petId is \"+ id);\r",
+											"pm.environment.set(\"petId\", id);   \r",
+											"})\r",
+											"\r",
+											"// test to pull/push"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "075eb1c8-8fe7-4cf6-83ef-fbf5aa1d1bcd",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id\": {{petId}},\r\n  \"category\": {\r\n    \"id\": {{$randomInt}},\r\n    \"name\": \"postman dog\"\r\n  },\r\n  \"name\": \"{{$randomFirstName}}\",\r\n  \"photoUrls\": [\r\n    \"{{$randomImageUrl}}\"\r\n  ],\r\n  \"tags\": [\r\n    {\r\n      \"id\": {{$randomInt}},\r\n      \"name\": \"{{$randomNoun}}\"\r\n    }\r\n  ],\r\n  \"status\": \"{{availableStatus}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{base_url}}/{{petController}}"
+							},
+							"response": []
+						}
+					],
+					"id": "a162414a-2a84-4098-805a-27ac21b8404f"
+				},
+				{
+					"name": "GET /pet/findByStatus",
+					"item": [
+						{
+							"name": "Find pet by status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "59fd0035-632f-4e5f-8d23-ef5bc8cf2384",
+										"exec": [
+											"// pm.test(\"Status Code is 200\", function(){\r",
+											"//     pm.response.to.have.status(200)\r",
+											"// })\r",
+											"\r",
+											"// pm.test(\"Date header is present\", function(){\r",
+											"//     pm.response.to.have.header(\"Date\");\r",
+											"// });\r",
+											"\r",
+											"// pm.test(\"Response time is less than 1100ms\", function () {\r",
+											"//     pm.expect(pm.response.responseTime).to.be.below(1100);\r",
+											"// });"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "60388d2b-9c52-4b04-8ed9-d2f6ede09167",
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "56edda70-e40e-4d5e-b129-75eb6a3bd5a9",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/{{petController}}/findByStatus?status={{availableStatus}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{petController}}",
+										"findByStatus"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "{{availableStatus}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Find pets by all statuses",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dd5fbbe9-9b51-403b-a1b5-c0e0ff0b10de",
+										"exec": [
+											"// pm.test(\"Status Code is 200\", function(){\r",
+											"//     pm.response.to.have.status(200);\r",
+											"// });\r",
+											"\r",
+											"// pm.test(\"Successful POST request\", function () {\r",
+											"//     pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);\r",
+											"// });\r",
+											"\r",
+											"// // Verify that the status code name is \"OK\"\r",
+											"// pm.test(\"Status Code Name is OK\", function () {\r",
+											"//     pm.expect(pm.response.status).to.equal(\"OK\");\r",
+											"// });\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "cdad58d4-ad2a-4bb0-b3e1-97f119991a52",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/{{petController}}/findByStatus?status={{availableStatus}},{{pendingStatus}},{{soldStatus}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{petController}}",
+										"findByStatus"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "{{availableStatus}},{{pendingStatus}},{{soldStatus}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "294bcc32-785c-40c9-8fbe-d64a67a58aad"
+				},
+				{
+					"name": "GET /pet/{petId}",
+					"item": [
+						{
+							"name": "Get pet by Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a3e6c701-be3d-4aef-ae75-50ba80170e0a",
+										"exec": [
+											"// pm.test(\"Status Code is 200\", function(){\r",
+											"//     pm.response.to.have.status(200)\r",
+											"// })\r",
+											"\r",
+											"// const deletePetByIdRequest = {\r",
+											"//     url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\") + '/' + pm.environment.get(\"petId\"),\r",
+											"//     method: 'DELETE',\r",
+											"//     header: {\r",
+											"//         'Content-Type': 'application/json',\r",
+											"//     },\r",
+											"// }\r",
+											"\r",
+											"// pm.sendRequest(deletePetByIdRequest, function(error, deletePetByIdResponse){\r",
+											"//     pm.test(\"Delete pet by Id request has OK status\", function(){\r",
+											"//         pm.expect(deletePetByIdResponse.status).to.eql(\"OK\");\r",
+											"//     });\r",
+											"// })\r",
+											"\r",
+											"console.log(encodeURIComponent(\"test component\"));\r",
+											"console.log(decodeURIComponent(\"test%20component\"));\r",
+											"\r",
+											"var atob = require('atob');\r",
+											"var btoa = require('btoa');\r",
+											"\r",
+											"console.log(atob(\"Y29vbCBwb3N0bWFuIHRyYWluaW5n\"));\r",
+											"console.log(btoa(\"cool postman training\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "93c25b38-0377-449b-a2e1-2029aedc0ec8",
+										"exec": [
+											"// const petName = pm.collectionVariables.replaceIn(\"{{$randomFirstName}}\");\r",
+											"// pm.collectionVariables.set(\"petName\", petName);\r",
+											"\r",
+											"// const postPetRequest = {\r",
+											"//     url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\"),\r",
+											"//     method: 'POST',\r",
+											"//     header: {\r",
+											"//         'Content-Type': 'application/json',\r",
+											"//     },\r",
+											"//     body: JSON.stringify({\r",
+											"//         \"id\": 0,\r",
+											"//         \"category\": {\r",
+											"//              \"id\": 0,\r",
+											"//              \"name\": \"string\"\r",
+											"//         },\r",
+											"//         \"name\": pm.collectionVariables.get(\"petName\"),\r",
+											"//         \"photoUrls\": [\r",
+											"//         \"string\"\r",
+											"//         ],\r",
+											"//         \"tags\": [\r",
+											"//         {\r",
+											"//             \"id\": 0,\r",
+											"//             \"name\": \"string\"\r",
+											"//         }\r",
+											"//         ],\r",
+											"//         \"status\": pm.collectionVariables.get(\"availableStatus\")\r",
+											"//     })\r",
+											"// }\r",
+											"\r",
+											"// pm.sendRequest(postPetRequest, function(error, response){\r",
+											"// let responseText = response.text().replace(/([^\"\\w-])([-0-9.]{8,100})([^\"\\w-])/g, '$1\\\"$2\\\"$3');\r",
+											"// let jsonData = JSON.parse(responseText);\r",
+											"// let id = jsonData.id.replace('\"',''); \r",
+											"\r",
+											"// console.log(\"petId is \"+ id);\r",
+											"// pm.environment.set(\"petId\", id);   \r",
+											"// })"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "97f88369-4f07-4fd1-bb9d-ae39f474afc7",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{base_url}}/{{petController}}/{{petId}}"
+							},
+							"response": []
+						}
+					],
+					"id": "9a5dd26a-3aa9-4bf4-a96e-ffe3d8636840"
+				},
+				{
+					"name": "POST /pet/{petId}",
+					"item": [
+						{
+							"name": "Update pet by Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "cf667941-25ff-4f35-a92b-50137706d427",
+										"exec": [
+											"pm.test(\"Status Code is 200\", function(){\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response Body matches string\", function(){\r",
+											"    pm.expect(pm.response.text()).to.include(pm.environment.get(\"petId\"));\r",
+											"});\r",
+											"\r",
+											"const deletePetByIdRequest = {\r",
+											"    url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\") + '/' + pm.environment.get(\"petId\"),\r",
+											"    method: 'DELETE',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest(deletePetByIdRequest, function(error, deletePetByIdResponse){\r",
+											"    pm.test(\"Delete pet by Id request has OK status\", function(){\r",
+											"        pm.expect(deletePetByIdResponse.status).to.eql(\"OK\");\r",
+											"    });\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "e24fbf2f-9e2b-42a8-be7a-5e9405a63704",
+										"exec": [
+											"const petName = pm.collectionVariables.replaceIn(\"{{$randomFirstName}}\");\r",
+											"pm.collectionVariables.set(\"petName\", petName);\r",
+											"\r",
+											"const postPetRequest = {\r",
+											"    url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\"),\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: JSON.stringify({\r",
+											"        \"id\": 0,\r",
+											"        \"category\": {\r",
+											"             \"id\": 0,\r",
+											"             \"name\": \"string\"\r",
+											"        },\r",
+											"        \"name\": pm.collectionVariables.get(\"petName\"),\r",
+											"        \"photoUrls\": [\r",
+											"        \"string\"\r",
+											"        ],\r",
+											"        \"tags\": [\r",
+											"        {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": \"string\"\r",
+											"        }\r",
+											"        ],\r",
+											"        \"status\": pm.collectionVariables.get(\"availableStatus\")\r",
+											"    })\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest(postPetRequest, function(error, response){\r",
+											"let responseText = response.text().replace(/([^\"\\w-])([-0-9.]{8,100})([^\"\\w-])/g, '$1\\\"$2\\\"$3');\r",
+											"let jsonData = JSON.parse(responseText);\r",
+											"let id = jsonData.id.replace('\"',''); \r",
+											"\r",
+											"console.log(\"petId is \"+ id);\r",
+											"pm.environment.set(\"petId\", id);   \r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "7cbab740-833d-4b0b-8955-6f55cf874725",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "name",
+											"value": "Betty",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "{{soldStatus}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{base_url}}/{{petController}}/{{petId}}"
+							},
+							"response": []
+						}
+					],
+					"id": "78e0367a-895f-4593-a5e4-9c8d93670bf9"
+				},
+				{
+					"name": "DELETE /pet{petId}",
+					"item": [
+						{
+							"name": "Delete pet by Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "e36637f7-b569-4751-aad9-646fb488095d",
+										"exec": [
+											"pm.test(\"Status Code is 200\", function(){\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response Time value is less than 200ms\", function(){\r",
+											"    pm.expect(pm.response.responseTime).to.below(200).and.to.be.above(10)\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "82cb5fbb-3a8b-4940-92e6-dc1a90d20aee",
+										"exec": [
+											"const petName = pm.collectionVariables.replaceIn(\"{{$randomFirstName}}\");\r",
+											"pm.collectionVariables.set(\"petName\", petName);\r",
+											"\r",
+											"const postPetRequest = {\r",
+											"    url: pm.globals.get(\"base_url\") + '/' + pm.collectionVariables.get(\"petController\"),\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: JSON.stringify({\r",
+											"        \"id\": 0,\r",
+											"        \"category\": {\r",
+											"             \"id\": 0,\r",
+											"             \"name\": \"string\"\r",
+											"        },\r",
+											"        \"name\": pm.collectionVariables.get(\"petName\"),\r",
+											"        \"photoUrls\": [\r",
+											"        \"string\"\r",
+											"        ],\r",
+											"        \"tags\": [\r",
+											"        {\r",
+											"            \"id\": 0,\r",
+											"            \"name\": \"string\"\r",
+											"        }\r",
+											"        ],\r",
+											"        \"status\": pm.collectionVariables.get(\"availableStatus\")\r",
+											"    })\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest(postPetRequest, function(error, response){\r",
+											"let responseText = response.text().replace(/([^\"\\w-])([-0-9.]{8,100})([^\"\\w-])/g, '$1\\\"$2\\\"$3');\r",
+											"let jsonData = JSON.parse(responseText);\r",
+											"let id = jsonData.id.replace('\"',''); \r",
+											"\r",
+											"console.log(\"petId is \"+ id);\r",
+											"pm.environment.set(\"petId\", id);   \r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "208258e3-0a16-4ae0-b7a0-ae97c7c88d85",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{base_url}}/{{petController}}/{{petId}}"
+							},
+							"response": []
+						}
+					],
+					"id": "7904536f-18a2-406d-9eb2-9b31763cf9c0"
+				}
+			],
+			"id": "6f539ec1-e8fe-4220-95f6-47c37bace124",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "83998e0c-bf8b-4185-b073-cd200d835cc4",
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "fe04d72b-ba6f-4ade-9f45-a821e50f7463",
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "296d09cb-416a-48d2-8070-1c08d261a173",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "1e0b8e63-a09f-4f0b-b090-e04961d92aa1",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "petController",
+			"value": "pet",
+			"type": "string"
+		},
+		{
+			"key": "availableStatus",
+			"value": "available",
+			"type": "string"
+		},
+		{
+			"key": "pendingStatus",
+			"value": "pending",
+			"type": "string"
+		},
+		{
+			"key": "soldStatus",
+			"value": "sold",
+			"type": "string"
+		},
+		{
+			"key": "petName",
+			"value": ""
+		}
+	]
+}
