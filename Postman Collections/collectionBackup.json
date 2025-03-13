@@ -80,7 +80,9 @@
 											"        pm.expect(deletePetByIdResponse.status).to.eql(\"OK\");\r",
 											"    });\r",
 											"})\r",
-											"})"
+											"})\r",
+											"\r",
+											"// change"
 										],
 										"type": "text/javascript",
 										"packages": {}
